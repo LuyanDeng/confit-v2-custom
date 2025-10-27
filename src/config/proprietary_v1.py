@@ -18,7 +18,7 @@ _max_seq_len_per_job_feature = {
     "company info": 64,
     "Job Basic Info": 512,
     "job notes": 64,
-    "job unctions": 256,
+    "job functions": 256,
 }
 
 

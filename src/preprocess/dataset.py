@@ -242,8 +242,13 @@ class RJPairSimplifiedDataset(Dataset):
 
         for resume in all_resume_dict:
             resume_ = resume.copy()
-            uid = str(resume_["user_id"])
+            # uid = str(resume_["user_id"])
+            uid = str(resume_.get("user_id", "")).strip()
+
+            if not uid:
+                continue
             resume_.pop("user_id")
+            
             uid_to_resume[uid] = resume_
 
         for job in all_job_dict:
@@ -555,10 +560,15 @@ class RJPairNewContrastiveDataset(Dataset):
         return r_to_j_mappping, j_to_r_mapping
 
     def _encode_single_dict(self, dict_data: Dict[str, str], type: str):
+        # if type == 'job':
+        #   print("DEBUG job keys:", list(dict_data.keys()))
         keys_to_encode = self.resume_key_names if type == 'resume' else self.job_key_names
         keys_to_encode_set = set(keys_to_encode)
         for k, v in dict_data.items():
-            assert(k in keys_to_encode_set)
+            # assert(k in keys_to_encode_set)
+            if k not in keys_to_encode_set:
+              # 忽略未知字段
+              continue
 
         taxon_token = self.resume_taxon_token if type == 'resume' else self.job_taxon_token
 
