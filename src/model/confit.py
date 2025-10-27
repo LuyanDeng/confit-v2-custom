@@ -674,8 +674,19 @@ class ConFitModel(BaseModel):
         bsz_r2j , bsz_j2r =  gathered_batched_all_coarse_resume.shape[0] , gathered_batched_all_coarse_job.shape[0]
         # all jobs and resumes with hard samples to contrast
         all_job= torch.cat([gathered_batched_all_coarse_job,gathered_batched_job_hard_negatives_coarse_vec],dim=0) if gathered_batched_job_hard_negatives_coarse_vec is not None else gathered_batched_all_coarse_job
-        all_resume = torch.cat([gathered_batched_all_coarse_resume,gathered_batched_resume_hard_negatives_coarse_vec],dim=0) if gathered_batched_resume_hard_negatives_coarse_vec is not None else gathered_batched_all_coarse_resume
-        
+        # all_resume = torch.cat([gathered_batched_all_coarse_resume,gathered_batched_resume_hard_negatives_coarse_vec],dim=0) if gathered_batched_resume_hard_negatives_coarse_vec is not None else gathered_batched_all_coarse_resume
+        if gathered_batched_resume_hard_negatives_coarse_vec is not None:
+            # 保证维度一致
+            if gathered_batched_resume_hard_negatives_coarse_vec.dim() == 1:
+                gathered_batched_resume_hard_negatives_coarse_vec = gathered_batched_resume_hard_negatives_coarse_vec.unsqueeze(0)
+            if gathered_batched_all_coarse_resume.dim() == 1:
+                gathered_batched_all_coarse_resume = gathered_batched_all_coarse_resume.unsqueeze(0)
+            all_resume = torch.cat(
+                [gathered_batched_all_coarse_resume, gathered_batched_resume_hard_negatives_coarse_vec],
+                dim=0
+            )
+        else:
+            all_resume = gathered_batched_all_coarse_resume
        
         contrastive_score_r2j,contrastive_score_j2r = torch.einsum("id, jd->ij",gathered_batched_all_coarse_resume / self.args.temperature,all_job), \
                                 torch.einsum("id, jd->ij",gathered_batched_all_coarse_job / self.args.temperature,all_resume)
