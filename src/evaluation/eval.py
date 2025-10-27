@@ -245,140 +245,253 @@ class EvalRanking:
         return recall
 
 
+    # def evaluate(self):
+    #     ranking_mode = self.ranking_mode()
+    #     all_ap_scores = []
+    #     all_ndcg_scores = []
+    #     all_ndcg_10_scores = []
+    #     all_recall_10_scores = []
+    #     all_other_scores = {}  # a dict of list to store other (optional) scores
+    #     eval_history = []
+    #     for k, v in self.test_ranking_data.items():
+    #         k = str(k)
+    #         if ranking_mode == "rank_job":
+    #             user_id = k
+    #             jd_nos = v["jd_nos"]
+    #             labels = v["satisfied"]
+                
+    #             if self.offline_mode:
+    #                 scores = self.metric.batch_score(
+    #                     np.array([user_id] * len(jd_nos)),
+    #                     np.array(
+    #                         [str(jd_no) for jd_no in jd_nos]
+    #                     ),
+    #                 )
+    #             else:
+    #                 scores = self.metric.batch_score(
+    #                     np.array([self.test_rid_to_representation[user_id]] * len(jd_nos)),
+    #                     np.array(
+    #                         [self.test_jid_to_representation[jd_no] for jd_no in jd_nos]
+    #                     ),
+    #                 )
+
+    #             predicted_ranking = np.argsort(scores)[::-1]
+    #             ap = self._calculate_ap(predicted_ranking, labels)
+    #             ndcg = self._calculate_ndcg(scores, np.array(labels))
+    #             ndcg_10 = self._calculate_ndcg(scores, np.array(labels), k=10)
+    #             recall_10 = self._calculate_recall(scores, np.array(labels), k=10)
+
+    #             eval_history.append(
+    #                 {
+    #                     "user_id": user_id,
+    #                     "jd_nos": jd_nos,
+    #                     "labels": labels,
+    #                     "scores": scores,
+    #                     "predicted_ranking": predicted_ranking,
+    #                 }
+    #             )
+
+    #             all_ap_scores.append(ap)
+    #             all_ndcg_scores.append(ndcg)
+    #             all_ndcg_10_scores.append(ndcg_10)
+    #             all_recall_10_scores.append(recall_10)
+    #             # calculates ndcg_100 or ndcg_1000 if labels are longer
+    #             for k in [100, 250, 500, 1000]:
+    #                 if len(labels) > k * 2:
+    #                     ndcg_k = self._calculate_ndcg(scores, np.array(labels), k=k)
+    #                     if f"ndcg@{k}" not in all_other_scores:
+    #                         all_other_scores[f"ndcg@{k}"] = []
+    #                     all_other_scores[f"ndcg@{k}"].append(ndcg_k)
+
+    #                     ## also do recall
+    #                     recall_k = self._calculate_recall(scores, np.array(labels), k=k)
+    #                     if f"recall@{k}" not in all_other_scores:
+    #                         all_other_scores[f"recall@{k}"] = []
+    #                     all_other_scores[f"recall@{k}"].append(recall_k)
+    #         elif ranking_mode == "rank_user":
+    #             jd_no = k
+    #             user_ids = v["user_ids"]
+    #             labels = v["satisfied"]
+    #             if self.offline_mode:
+    #                 scores = self.metric.batch_score(
+    #                     np.array(
+    #                         [
+    #                             str(user_id)
+    #                             for user_id in user_ids
+    #                         ]
+    #                     ),
+    #                     np.array([jd_no] * len(user_ids)),
+    #                 )
+    #             else:
+    #                 scores = self.metric.batch_score(
+    #                     np.array(
+    #                         [
+    #                             self.test_rid_to_representation[user_id]
+    #                             for user_id in user_ids
+    #                         ]
+    #                     ),
+    #                     np.array([self.test_jid_to_representation[jd_no]] * len(user_ids)),
+    #                 )
+
+    #             predicted_ranking = np.argsort(scores)[::-1]
+    #             ap = self._calculate_ap(predicted_ranking, labels)
+    #             ndcg = self._calculate_ndcg(scores, np.array(labels))
+    #             ndcg_10 = self._calculate_ndcg(scores, np.array(labels), k=10)
+    #             recall_10 = self._calculate_recall(scores, np.array(labels), k=10)
+
+    #             eval_history.append(
+    #                 {
+    #                     "jd_no": jd_no,
+    #                     "user_ids": user_ids,
+    #                     "labels": labels,
+    #                     "scores": scores,
+    #                     "predicted_ranking": predicted_ranking,
+    #                 }
+    #             )
+
+    #             all_ap_scores.append(ap)
+    #             all_ndcg_scores.append(ndcg)
+    #             all_ndcg_10_scores.append(ndcg_10)
+    #             all_recall_10_scores.append(recall_10)
+    #             # calculates ndcg_100 or ndcg_1000 if labels are longer
+    #             for k in [100, 250, 500, 1000]:
+    #                 if len(labels) > k * 2:
+    #                     ndcg_k = self._calculate_ndcg(scores, np.array(labels), k=k)
+    #                     if f"ndcg@{k}" not in all_other_scores:
+    #                         all_other_scores[f"ndcg@{k}"] = []
+    #                     all_other_scores[f"ndcg@{k}"].append(ndcg_k)
+
+    #                     ## also do recall
+    #                     recall_k = self._calculate_recall(scores, np.array(labels), k=k)
+    #                     if f"recall@{k}" not in all_other_scores:
+    #                         all_other_scores[f"recall@{k}"] = []
+    #                     all_other_scores[f"recall@{k}"].append(recall_k)
+
+    #     # calculate scores
+    #     mean_ap = np.mean(all_ap_scores)
+    #     mean_ndcg = np.mean(all_ndcg_scores)
+    #     mean_ndcg_10 = np.mean(all_ndcg_10_scores)
+    #     mean_recall_10 = np.mean(all_recall_10_scores)
+    #     mean_other_scores = {k: np.mean(v) for k, v in all_other_scores.items()}
+
+    #     score_report = {
+    #         "map": mean_ap,
+    #         "ndcg": mean_ndcg,
+    #         "ndcg@10": mean_ndcg_10,
+    #         "recall@10": mean_recall_10,
+    #         **mean_other_scores,
+    #     }
+    #     return score_report, eval_history
+    
     def evaluate(self):
+
         ranking_mode = self.ranking_mode()
-        all_ap_scores = []
-        all_ndcg_scores = []
-        all_ndcg_10_scores = []
-        all_recall_10_scores = []
-        all_other_scores = {}  # a dict of list to store other (optional) scores
+        all_ap_scores, all_ndcg_scores, all_ndcg_10_scores, all_recall_10_scores = [], [], [], []
+        all_other_scores = {}
         eval_history = []
+
+        missing_resume_ids, missing_job_ids = set(), set()
+        skipped_cases = 0
+
+        def process_one_case(scores, labels, item_id, partner_ids, mode):
+            """辅助函数：计算单个case的所有指标"""
+            predicted_ranking = np.argsort(scores)[::-1]
+            ap = self._calculate_ap(predicted_ranking, labels)
+            ndcg = self._calculate_ndcg(scores, np.array(labels))
+            ndcg_10 = self._calculate_ndcg(scores, np.array(labels), k=10)
+            recall_10 = self._calculate_recall(scores, np.array(labels), k=10)
+
+            eval_history.append({
+                "item_id": item_id,
+                "partner_ids": partner_ids,
+                "labels": labels,
+                "scores": scores.tolist(),
+                "predicted_ranking": predicted_ranking.tolist(),
+                "mode": mode
+            })
+
+            all_ap_scores.append(ap)
+            all_ndcg_scores.append(ndcg)
+            all_ndcg_10_scores.append(ndcg_10)
+            all_recall_10_scores.append(recall_10)
+
+            for k in [100, 250, 500, 1000]:
+                if len(labels) > k * 2:
+                    ndcg_k = self._calculate_ndcg(scores, np.array(labels), k=k)
+                    all_other_scores.setdefault(f"ndcg@{k}", []).append(ndcg_k)
+                    recall_k = self._calculate_recall(scores, np.array(labels), k=k)
+                    all_other_scores.setdefault(f"recall@{k}", []).append(recall_k)
+
         for k, v in self.test_ranking_data.items():
             k = str(k)
-            if ranking_mode == "rank_job":
-                user_id = k
-                jd_nos = v["jd_nos"]
-                labels = v["satisfied"]
-                
-                if self.offline_mode:
-                    scores = self.metric.batch_score(
-                        np.array([user_id] * len(jd_nos)),
-                        np.array(
-                            [str(jd_no) for jd_no in jd_nos]
-                        ),
-                    )
-                else:
-                    scores = self.metric.batch_score(
-                        np.array([self.test_rid_to_representation[user_id]] * len(jd_nos)),
-                        np.array(
-                            [self.test_jid_to_representation[jd_no] for jd_no in jd_nos]
-                        ),
-                    )
 
-                predicted_ranking = np.argsort(scores)[::-1]
-                ap = self._calculate_ap(predicted_ranking, labels)
-                ndcg = self._calculate_ndcg(scores, np.array(labels))
-                ndcg_10 = self._calculate_ndcg(scores, np.array(labels), k=10)
-                recall_10 = self._calculate_recall(scores, np.array(labels), k=10)
+            try:
+                if ranking_mode == "rank_job":
+                    user_id = k
+                    jd_nos, labels = v["jd_nos"], v["satisfied"]
 
-                eval_history.append(
-                    {
-                        "user_id": user_id,
-                        "jd_nos": jd_nos,
-                        "labels": labels,
-                        "scores": scores,
-                        "predicted_ranking": predicted_ranking,
-                    }
-                )
+                    # 缺失resume embedding
+                    if user_id not in self.test_rid_to_representation:
+                        missing_resume_ids.add(user_id)
+                        skipped_cases += 1
+                        continue
 
-                all_ap_scores.append(ap)
-                all_ndcg_scores.append(ndcg)
-                all_ndcg_10_scores.append(ndcg_10)
-                all_recall_10_scores.append(recall_10)
-                # calculates ndcg_100 or ndcg_1000 if labels are longer
-                for k in [100, 250, 500, 1000]:
-                    if len(labels) > k * 2:
-                        ndcg_k = self._calculate_ndcg(scores, np.array(labels), k=k)
-                        if f"ndcg@{k}" not in all_other_scores:
-                            all_other_scores[f"ndcg@{k}"] = []
-                        all_other_scores[f"ndcg@{k}"].append(ndcg_k)
+                    valid_jd_nos = [jd for jd in jd_nos if jd in self.test_jid_to_representation]
+                    if not valid_jd_nos:
+                        missing_job_ids.update(set(jd_nos))
+                        skipped_cases += 1
+                        continue
 
-                        ## also do recall
-                        recall_k = self._calculate_recall(scores, np.array(labels), k=k)
-                        if f"recall@{k}" not in all_other_scores:
-                            all_other_scores[f"recall@{k}"] = []
-                        all_other_scores[f"recall@{k}"].append(recall_k)
-            elif ranking_mode == "rank_user":
-                jd_no = k
-                user_ids = v["user_ids"]
-                labels = v["satisfied"]
-                if self.offline_mode:
                     scores = self.metric.batch_score(
-                        np.array(
-                            [
-                                str(user_id)
-                                for user_id in user_ids
-                            ]
-                        ),
-                        np.array([jd_no] * len(user_ids)),
-                    )
-                else:
-                    scores = self.metric.batch_score(
-                        np.array(
-                            [
-                                self.test_rid_to_representation[user_id]
-                                for user_id in user_ids
-                            ]
-                        ),
-                        np.array([self.test_jid_to_representation[jd_no]] * len(user_ids)),
+                        np.array([self.test_rid_to_representation[user_id]] * len(valid_jd_nos)),
+                        np.array([self.test_jid_to_representation[jd] for jd in valid_jd_nos])
                     )
 
-                predicted_ranking = np.argsort(scores)[::-1]
-                ap = self._calculate_ap(predicted_ranking, labels)
-                ndcg = self._calculate_ndcg(scores, np.array(labels))
-                ndcg_10 = self._calculate_ndcg(scores, np.array(labels), k=10)
-                recall_10 = self._calculate_recall(scores, np.array(labels), k=10)
+                    process_one_case(scores, labels[:len(valid_jd_nos)], user_id, valid_jd_nos, "rank_job")
 
-                eval_history.append(
-                    {
-                        "jd_no": jd_no,
-                        "user_ids": user_ids,
-                        "labels": labels,
-                        "scores": scores,
-                        "predicted_ranking": predicted_ranking,
-                    }
-                )
+                elif ranking_mode == "rank_user":
+                    jd_no = k
+                    user_ids, labels = v["user_ids"], v["satisfied"]
 
-                all_ap_scores.append(ap)
-                all_ndcg_scores.append(ndcg)
-                all_ndcg_10_scores.append(ndcg_10)
-                all_recall_10_scores.append(recall_10)
-                # calculates ndcg_100 or ndcg_1000 if labels are longer
-                for k in [100, 250, 500, 1000]:
-                    if len(labels) > k * 2:
-                        ndcg_k = self._calculate_ndcg(scores, np.array(labels), k=k)
-                        if f"ndcg@{k}" not in all_other_scores:
-                            all_other_scores[f"ndcg@{k}"] = []
-                        all_other_scores[f"ndcg@{k}"].append(ndcg_k)
+                    if jd_no not in self.test_jid_to_representation:
+                        missing_job_ids.add(jd_no)
+                        skipped_cases += 1
+                        continue
 
-                        ## also do recall
-                        recall_k = self._calculate_recall(scores, np.array(labels), k=k)
-                        if f"recall@{k}" not in all_other_scores:
-                            all_other_scores[f"recall@{k}"] = []
-                        all_other_scores[f"recall@{k}"].append(recall_k)
+                    valid_users = [uid for uid in user_ids if uid in self.test_rid_to_representation]
+                    if not valid_users:
+                        missing_resume_ids.update(set(user_ids))
+                        skipped_cases += 1
+                        continue
 
-        # calculate scores
-        mean_ap = np.mean(all_ap_scores)
-        mean_ndcg = np.mean(all_ndcg_scores)
-        mean_ndcg_10 = np.mean(all_ndcg_10_scores)
-        mean_recall_10 = np.mean(all_recall_10_scores)
-        mean_other_scores = {k: np.mean(v) for k, v in all_other_scores.items()}
+                    scores = self.metric.batch_score(
+                        np.array([self.test_rid_to_representation[uid] for uid in valid_users]),
+                        np.array([self.test_jid_to_representation[jd_no]] * len(valid_users))
+                    )
 
+                    process_one_case(scores, labels[:len(valid_users)], jd_no, valid_users, "rank_user")
+
+            except Exception as e:
+                print(f"⚠️ Error evaluating ID={k}: {e}")
+                skipped_cases += 1
+                continue
+
+        # 汇总指标
         score_report = {
-            "map": mean_ap,
-            "ndcg": mean_ndcg,
-            "ndcg@10": mean_ndcg_10,
-            "recall@10": mean_recall_10,
-            **mean_other_scores,
+            "map": np.mean(all_ap_scores) if all_ap_scores else 0,
+            "ndcg": np.mean(all_ndcg_scores) if all_ndcg_scores else 0,
+            "ndcg@10": np.mean(all_ndcg_10_scores) if all_ndcg_10_scores else 0,
+            "recall@10": np.mean(all_recall_10_scores) if all_recall_10_scores else 0,
+            **{k: np.mean(v) for k, v in all_other_scores.items()},
+            "skipped_cases": skipped_cases,
+            "missing_resume_count": len(missing_resume_ids),
+            "missing_job_count": len(missing_job_ids)
         }
+
+        print(f"✅ Evaluation finished.")
+        print(f"   Skipped {skipped_cases} cases.")
+        print(f"   Missing resume embeddings: {len(missing_resume_ids)}")
+        print(f"   Missing job embeddings: {len(missing_job_ids)}")
+
         return score_report, eval_history
+
