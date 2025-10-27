@@ -264,7 +264,9 @@ class RJPairSimplifiedDataset(Dataset):
             job_id = str(label_data["jd_no"])
             label = int(label_data["satisfied"])
 
-            resume = uid_to_resume[resume_id]
+            # resume = uid_to_resume[resume_id]
+            if resume_id not in uid_to_resume:
+                continue
             job = jd_no_to_job[job_id]
             data.append((resume, job, label))
         return data
