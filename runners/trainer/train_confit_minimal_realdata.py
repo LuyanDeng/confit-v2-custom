@@ -6,6 +6,7 @@ import pandas as pd
 from dataclasses import dataclass, field
 from functools import partial
 from transformers import AutoTokenizer, AutoModel, get_linear_schedule_with_warmup
+import torch.nn.functional as F
 
 # =============================
 # 1️⃣ 基础训练参数
@@ -136,6 +137,25 @@ def main():
 
     print("🚀 Start training ...")
     trainer.fit(model, train_loader, val_loader)
+    
+    print("🔹 Generating and saving embeddings for validation set ...")
+    model.eval()
+    resume_embeds, job_embeds = [], []
+
+    for batch in val_loader:
+        with torch.no_grad():
+            r_vec = model.forward(batch["batched_resume"]).cpu()
+            j_vec = model.forward(batch["batched_job"]).cpu()
+        resume_embeds.append(r_vec)
+        job_embeds.append(j_vec)
+
+    resume_embeds = F.normalize(torch.cat(resume_embeds, dim=0), dim=1)
+    job_embeds = F.normalize(torch.cat(job_embeds, dim=0), dim=1)
+
+    os.makedirs(args.save_path, exist_ok=True)
+    save_path = os.path.join(args.save_path, "val_embeddings.pt")
+    torch.save({"resume_embeds": resume_embeds, "job_embeds": job_embeds}, save_path)
+    print(f"✅ Saved embeddings to {save_path}")
 
 
 if __name__ == "__main__":
