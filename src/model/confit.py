@@ -107,6 +107,10 @@ class ConFitModelArguments:
         default=0.5,
         metadata={"help": "weight between two loss terms"}
     )
+    # max_seq_length: int = field(
+    #     default=512,
+    #     metadata={"help": "Maximum sequence length for tokenizer truncation"}
+    # )
     
     
     def __post_init__(self):
