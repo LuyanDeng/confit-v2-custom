@@ -585,6 +585,148 @@ class ConFitModel(BaseModel):
     
             
                   
+    # def compute_coarsegrained_loss_dist(
+    #     self,
+    #     batched_resume_coarse_vec: torch.Tensor,
+    #     batched_job_coarse_vec: torch.Tensor,
+    #     batched_resume_hard_negatives: dict,
+    #     batched_resume_hard_negatives_indices: List[int],
+    #     batched_job_hard_negatives: dict,
+    #     batched_job_hard_negatives_indices: List[int],
+    #     batched_resume_positives: dict,
+    #     batched_resume_positive_indices: List[int],
+    #     batched_job_positives: dict,
+    #     batched_job_positive_indices: List[int],
+    # ):
+    #     """where we compute contrastive objective
+
+    #     Args:
+    #         batched_resume_coarse_vec (torch.Tensor): _description_
+    #         batched_job_coarse_vec (torch.Tensor): _description_
+    #         batched_resume_hard_negatives (dict): _description_
+    #         batched_resume_hard_negatives_indices (List[int]): _description_
+    #         batched_job_hard_negatives (dict): _description_
+    #         batched_job_hard_negatives_indices (List[int]): _description_
+    #         batched_resume_positives (dict): _description_
+    #         batched_resume_positive_indices (List[int]): _description_
+    #         batched_job_positives (dict): _description_
+    #         batched_job_positive_indices (List[int]): _description_
+
+    #     Returns:
+    #         _type_: _description_
+    #     """
+    #     batched_resume_hard_negatives_coarse_vec = None
+    #     batched_resume_hard_negatives_finegrained_vec = None
+    #     batched_all_coarse_resume = None
+    #     batched_job_hard_negatives_coarse_vec = None
+    #     batched_job_hard_negatives_finegrained_vec = None
+    #     batched_all_coarse_job = None
+
+    #     num_resume_hard_negs_used = 0
+    #     num_job_hard_negs_used = 0
+    #     num_resume_positive_used = 0
+    #     num_job_positive_used = 0
+    #     contrastive_loss = torch.zeros(
+    #         1, dtype=torch.float, device=batched_resume_coarse_vec.device
+    #     )
+        
+    #     batched_all_coarse_job = batched_job_coarse_vec
+    #     batched_all_coarse_resume = batched_resume_coarse_vec
+    #     self.trainer.strategy.barrier()
+    #     #print(batched_all_coarse_resume.device,"1")
+    #     if len(batched_resume_hard_negatives) > 0:
+    #         hard_neg_resume_output = self.forward(
+    #             batched_resume_hard_negatives, data_type="resume"
+    #         )
+    #         batched_resume_hard_negatives_coarse_vec = hard_neg_resume_output.coarse_embedding
+    #         batched_resume_hard_negatives_finegrained_vec = hard_neg_resume_output.finegrained_embedding
+            
+          
+            
+    #         num_resume_hard_negs_used += batched_resume_hard_negatives_coarse_vec.shape[0]  
+    #     self.trainer.strategy.barrier()
+    #     #print(batched_all_coarse_resume.device,"2")
+    #     if len(batched_job_hard_negatives) > 0:
+    #         # learn resume-to-job pairing since we have hard negatives OF job
+    #         hard_neg_job_output = self.forward(
+    #             batched_job_hard_negatives, data_type="job"
+    #         )
+    #         batched_job_hard_negatives_coarse_vec = hard_neg_job_output.coarse_embedding
+    #         batched_job_hard_negatives_finegrained_vec = hard_neg_job_output.finegrained_embedding
+
+            
+    #         num_job_hard_negs_used += batched_job_hard_negatives_coarse_vec.shape[
+    #             0
+    #         ]
+    #     self.trainer.strategy.barrier()
+      
+    #     device=batched_all_coarse_job.device
+    #     dtype = batched_all_coarse_job.dtype
+       
+    #     self.trainer.strategy.barrier()
+    #     gathered_batched_all_coarse_job  = self.all_gather(batched_all_coarse_job,sync_grads=True).flatten(0,1).contiguous()
+    #     gathered_batched_all_coarse_resume = self.all_gather(batched_all_coarse_resume,sync_grads=True).flatten(0,1).contiguous()
+    #     self.trainer.strategy.barrier()
+        
+    #     gathered_batched_job_hard_negatives_coarse_vec = batched_job_hard_negatives_coarse_vec
+    #     gathered_batched_resume_hard_negatives_coarse_vec = batched_resume_hard_negatives_coarse_vec
+        
+    #     bsz_r2j , bsz_j2r =  gathered_batched_all_coarse_resume.shape[0] , gathered_batched_all_coarse_job.shape[0]
+    #     # all jobs and resumes with hard samples to contrast
+    #     all_job= torch.cat([gathered_batched_all_coarse_job,gathered_batched_job_hard_negatives_coarse_vec],dim=0) if gathered_batched_job_hard_negatives_coarse_vec is not None else gathered_batched_all_coarse_job
+    #     # all_resume = torch.cat([gathered_batched_all_coarse_resume,gathered_batched_resume_hard_negatives_coarse_vec],dim=0) if gathered_batched_resume_hard_negatives_coarse_vec is not None else gathered_batched_all_coarse_resume
+    #     if gathered_batched_resume_hard_negatives_coarse_vec is not None:
+    #         # 保证维度一致
+    #         if gathered_batched_resume_hard_negatives_coarse_vec.dim() == 1:
+    #             gathered_batched_resume_hard_negatives_coarse_vec = gathered_batched_resume_hard_negatives_coarse_vec.unsqueeze(0)
+    #         if gathered_batched_all_coarse_resume.dim() == 1:
+    #             gathered_batched_all_coarse_resume = gathered_batched_all_coarse_resume.unsqueeze(0)
+    #         all_resume = torch.cat(
+    #             [gathered_batched_all_coarse_resume, gathered_batched_resume_hard_negatives_coarse_vec],
+    #             dim=0
+    #         )
+    #     else:
+    #         all_resume = gathered_batched_all_coarse_resume
+       
+    #     contrastive_score_r2j,contrastive_score_j2r = torch.einsum("id, jd->ij",gathered_batched_all_coarse_resume / self.args.temperature,all_job), \
+    #                             torch.einsum("id, jd->ij",gathered_batched_all_coarse_job / self.args.temperature,all_resume)
+                                     
+    #     labels_r2j ,labels_j2r  = torch.arange(0, bsz_r2j, dtype=torch.long, device=contrastive_score_r2j.device), \
+    #                             torch.arange(0, bsz_j2r, dtype=torch.long, device=contrastive_score_j2r.device)
+        
+                         
+        
+            
+                                
+    #     contrastive_loss_r2j = torch.nn.functional.cross_entropy(
+    #             contrastive_score_r2j, labels_r2j
+    #         )
+    #     contrastive_loss_j2r = torch.nn.functional.cross_entropy(
+    #             contrastive_score_j2r, labels_j2r
+    #         )
+        
+    #     contrastive_loss += self.args.loss_lambda*contrastive_loss_r2j
+    #     contrastive_loss += (1-self.args.loss_lambda)*contrastive_loss_j2r
+    #     contrastive_loss = torch.nan_to_num(contrastive_loss, nan=0.0, posinf=1e6, neginf=-1e6)
+       
+           
+    #     return {
+    #         "contrastive_loss": contrastive_loss,
+    #         "contrastive_loss_r2j":contrastive_loss_r2j,
+    #         "contrastive_loss_j2r":contrastive_loss_j2r,
+    #         "num_resume_hard_negs_used": num_resume_hard_negs_used,
+    #         "num_job_hard_negs_used": num_job_hard_negs_used,
+    #         "num_resume_positive_used": num_resume_positive_used,
+    #         "num_job_positive_used": num_job_positive_used,
+    #         "batched_job_hard_negatives_coarse_vec": batched_job_hard_negatives_coarse_vec,
+    #         "batched_job_hard_negatives_finegrained_vec": batched_job_hard_negatives_finegrained_vec,
+    #         "batched_all_coarse_job": batched_all_coarse_job,
+    #         "batched_resume_hard_negatives_coarse_vec": batched_resume_hard_negatives_coarse_vec,
+    #         "batched_resume_hard_negatives_finegrained_vec": batched_resume_hard_negatives_finegrained_vec,
+    #         "batched_all_coarse_resume": batched_all_coarse_resume,
+    #     }
+    
+
     def compute_coarsegrained_loss_dist(
         self,
         batched_resume_coarse_vec: torch.Tensor,
@@ -598,23 +740,7 @@ class ConFitModel(BaseModel):
         batched_job_positives: dict,
         batched_job_positive_indices: List[int],
     ):
-        """where we compute contrastive objective
-
-        Args:
-            batched_resume_coarse_vec (torch.Tensor): _description_
-            batched_job_coarse_vec (torch.Tensor): _description_
-            batched_resume_hard_negatives (dict): _description_
-            batched_resume_hard_negatives_indices (List[int]): _description_
-            batched_job_hard_negatives (dict): _description_
-            batched_job_hard_negatives_indices (List[int]): _description_
-            batched_resume_positives (dict): _description_
-            batched_resume_positive_indices (List[int]): _description_
-            batched_job_positives (dict): _description_
-            batched_job_positive_indices (List[int]): _description_
-
-        Returns:
-            _type_: _description_
-        """
+        """Compute coarse-grained contrastive objective (safe version)."""
         batched_resume_hard_negatives_coarse_vec = None
         batched_resume_hard_negatives_finegrained_vec = None
         batched_all_coarse_resume = None
@@ -629,91 +755,156 @@ class ConFitModel(BaseModel):
         contrastive_loss = torch.zeros(
             1, dtype=torch.float, device=batched_resume_coarse_vec.device
         )
-        
+
         batched_all_coarse_job = batched_job_coarse_vec
         batched_all_coarse_resume = batched_resume_coarse_vec
         self.trainer.strategy.barrier()
-        #print(batched_all_coarse_resume.device,"1")
+
+        # === resume hard negatives ===
         if len(batched_resume_hard_negatives) > 0:
             hard_neg_resume_output = self.forward(
                 batched_resume_hard_negatives, data_type="resume"
             )
-            batched_resume_hard_negatives_coarse_vec = hard_neg_resume_output.coarse_embedding
-            batched_resume_hard_negatives_finegrained_vec = hard_neg_resume_output.finegrained_embedding
-            
-          
-            
-            num_resume_hard_negs_used += batched_resume_hard_negatives_coarse_vec.shape[0]  
+            batched_resume_hard_negatives_coarse_vec = (
+                hard_neg_resume_output.coarse_embedding
+            )
+            batched_resume_hard_negatives_finegrained_vec = (
+                hard_neg_resume_output.finegrained_embedding
+            )
+            num_resume_hard_negs_used += (
+                batched_resume_hard_negatives_coarse_vec.shape[0]
+            )
         self.trainer.strategy.barrier()
-        #print(batched_all_coarse_resume.device,"2")
+
+        # === job hard negatives ===
         if len(batched_job_hard_negatives) > 0:
-            # learn resume-to-job pairing since we have hard negatives OF job
             hard_neg_job_output = self.forward(
                 batched_job_hard_negatives, data_type="job"
             )
-            batched_job_hard_negatives_coarse_vec = hard_neg_job_output.coarse_embedding
-            batched_job_hard_negatives_finegrained_vec = hard_neg_job_output.finegrained_embedding
+            batched_job_hard_negatives_coarse_vec = (
+                hard_neg_job_output.coarse_embedding
+            )
+            batched_job_hard_negatives_finegrained_vec = (
+                hard_neg_job_output.finegrained_embedding
+            )
+            num_job_hard_negs_used += batched_job_hard_negatives_coarse_vec.shape[0]
+        self.trainer.strategy.barrier()
 
-            
-            num_job_hard_negs_used += batched_job_hard_negatives_coarse_vec.shape[
-                0
-            ]
-        self.trainer.strategy.barrier()
-      
-        device=batched_all_coarse_job.device
+        device = batched_all_coarse_job.device
         dtype = batched_all_coarse_job.dtype
-       
+
+        # === all_gather ===
         self.trainer.strategy.barrier()
-        gathered_batched_all_coarse_job  = self.all_gather(batched_all_coarse_job,sync_grads=True).flatten(0,1).contiguous()
-        gathered_batched_all_coarse_resume = self.all_gather(batched_all_coarse_resume,sync_grads=True).flatten(0,1).contiguous()
+        gathered_batched_all_coarse_job = (
+            self.all_gather(batched_all_coarse_job, sync_grads=True)
+            .flatten(0, 1)
+            .contiguous()
+        )
+        gathered_batched_all_coarse_resume = (
+            self.all_gather(batched_all_coarse_resume, sync_grads=True)
+            .flatten(0, 1)
+            .contiguous()
+        )
         self.trainer.strategy.barrier()
-        
-        gathered_batched_job_hard_negatives_coarse_vec = batched_job_hard_negatives_coarse_vec
-        gathered_batched_resume_hard_negatives_coarse_vec = batched_resume_hard_negatives_coarse_vec
-        
-        bsz_r2j , bsz_j2r =  gathered_batched_all_coarse_resume.shape[0] , gathered_batched_all_coarse_job.shape[0]
-        # all jobs and resumes with hard samples to contrast
-        all_job= torch.cat([gathered_batched_all_coarse_job,gathered_batched_job_hard_negatives_coarse_vec],dim=0) if gathered_batched_job_hard_negatives_coarse_vec is not None else gathered_batched_all_coarse_job
-        # all_resume = torch.cat([gathered_batched_all_coarse_resume,gathered_batched_resume_hard_negatives_coarse_vec],dim=0) if gathered_batched_resume_hard_negatives_coarse_vec is not None else gathered_batched_all_coarse_resume
-        if gathered_batched_resume_hard_negatives_coarse_vec is not None:
-            # 保证维度一致
-            if gathered_batched_resume_hard_negatives_coarse_vec.dim() == 1:
-                gathered_batched_resume_hard_negatives_coarse_vec = gathered_batched_resume_hard_negatives_coarse_vec.unsqueeze(0)
-            if gathered_batched_all_coarse_resume.dim() == 1:
-                gathered_batched_all_coarse_resume = gathered_batched_all_coarse_resume.unsqueeze(0)
-            all_resume = torch.cat(
-                [gathered_batched_all_coarse_resume, gathered_batched_resume_hard_negatives_coarse_vec],
-                dim=0
+
+        gathered_batched_job_hard_negatives_coarse_vec = (
+            batched_job_hard_negatives_coarse_vec
+        )
+        gathered_batched_resume_hard_negatives_coarse_vec = (
+            batched_resume_hard_negatives_coarse_vec
+        )
+
+        # === helper for shape safety ===
+        def ensure_2d(x):
+            if x is None:
+                return None
+            if x.dim() == 1:
+                x = x.unsqueeze(0)
+            return x
+
+        gathered_batched_all_coarse_job = ensure_2d(gathered_batched_all_coarse_job)
+        gathered_batched_all_coarse_resume = ensure_2d(gathered_batched_all_coarse_resume)
+        gathered_batched_job_hard_negatives_coarse_vec = ensure_2d(
+            gathered_batched_job_hard_negatives_coarse_vec
+        )
+        gathered_batched_resume_hard_negatives_coarse_vec = ensure_2d(
+            gathered_batched_resume_hard_negatives_coarse_vec
+        )
+
+        # === build full pools ===
+        bsz_r2j = gathered_batched_all_coarse_resume.shape[0]
+        bsz_j2r = gathered_batched_all_coarse_job.shape[0]
+
+        all_job = (
+            torch.cat(
+                [
+                    gathered_batched_all_coarse_job,
+                    gathered_batched_job_hard_negatives_coarse_vec,
+                ],
+                dim=0,
             )
-        else:
-            all_resume = gathered_batched_all_coarse_resume
-       
-        contrastive_score_r2j,contrastive_score_j2r = torch.einsum("id, jd->ij",gathered_batched_all_coarse_resume / self.args.temperature,all_job), \
-                                torch.einsum("id, jd->ij",gathered_batched_all_coarse_job / self.args.temperature,all_resume)
-                                     
-        labels_r2j ,labels_j2r  = torch.arange(0, bsz_r2j, dtype=torch.long, device=contrastive_score_r2j.device), \
-                                torch.arange(0, bsz_j2r, dtype=torch.long, device=contrastive_score_j2r.device)
-        
-                         
-        
-            
-                                
+            if gathered_batched_job_hard_negatives_coarse_vec is not None
+            else gathered_batched_all_coarse_job
+        )
+        all_resume = (
+            torch.cat(
+                [
+                    gathered_batched_all_coarse_resume,
+                    gathered_batched_resume_hard_negatives_coarse_vec,
+                ],
+                dim=0,
+            )
+            if gathered_batched_resume_hard_negatives_coarse_vec is not None
+            else gathered_batched_all_coarse_resume
+        )
+
+        # === normalize for stability (bf16 safe) ===
+        all_job = torch.nn.functional.normalize(all_job, dim=-1)
+        all_resume = torch.nn.functional.normalize(all_resume, dim=-1)
+        gathered_batched_all_coarse_resume = torch.nn.functional.normalize(
+            gathered_batched_all_coarse_resume, dim=-1
+        )
+        gathered_batched_all_coarse_job = torch.nn.functional.normalize(
+            gathered_batched_all_coarse_job, dim=-1
+        )
+
+        # === compute similarities safely ===
+        contrastive_score_r2j = torch.einsum(
+            "id,jd->ij",
+            gathered_batched_all_coarse_resume / self.args.temperature,
+            all_job,
+        )
+        contrastive_score_j2r = torch.einsum(
+            "id,jd->ij",
+            gathered_batched_all_coarse_job / self.args.temperature,
+            all_resume,
+        )
+
+        labels_r2j = torch.arange(
+            0, bsz_r2j, dtype=torch.long, device=contrastive_score_r2j.device
+        )
+        labels_j2r = torch.arange(
+            0, bsz_j2r, dtype=torch.long, device=contrastive_score_j2r.device
+        )
+
+        # === loss ===
         contrastive_loss_r2j = torch.nn.functional.cross_entropy(
-                contrastive_score_r2j, labels_r2j
-            )
+            contrastive_score_r2j, labels_r2j
+        )
         contrastive_loss_j2r = torch.nn.functional.cross_entropy(
-                contrastive_score_j2r, labels_j2r
-            )
-        
-        contrastive_loss += self.args.loss_lambda*contrastive_loss_r2j
-        contrastive_loss += (1-self.args.loss_lambda)*contrastive_loss_j2r
-        contrastive_loss = torch.nan_to_num(contrastive_loss, nan=0.0, posinf=1e6, neginf=-1e6)
-       
-           
+            contrastive_score_j2r, labels_j2r
+        )
+
+        contrastive_loss += self.args.loss_lambda * contrastive_loss_r2j
+        contrastive_loss += (1 - self.args.loss_lambda) * contrastive_loss_j2r
+        contrastive_loss = torch.nan_to_num(
+            contrastive_loss, nan=0.0, posinf=1e6, neginf=-1e6
+        )
+
         return {
             "contrastive_loss": contrastive_loss,
-            "contrastive_loss_r2j":contrastive_loss_r2j,
-            "contrastive_loss_j2r":contrastive_loss_j2r,
+            "contrastive_loss_r2j": contrastive_loss_r2j,
+            "contrastive_loss_j2r": contrastive_loss_j2r,
             "num_resume_hard_negs_used": num_resume_hard_negs_used,
             "num_job_hard_negs_used": num_job_hard_negs_used,
             "num_resume_positive_used": num_resume_positive_used,
@@ -725,6 +916,9 @@ class ConFitModel(BaseModel):
             "batched_resume_hard_negatives_finegrained_vec": batched_resume_hard_negatives_finegrained_vec,
             "batched_all_coarse_resume": batched_all_coarse_resume,
         }
+
+    
+    
     def training_step(self, batch, batch_idx) -> torch.Tensor:
         """batch still consist of batched resume/job in the key dimension, BUT we have four differences:
         1. added hard negative, EITHER there is more resume than job, OR more job than resume
