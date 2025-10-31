@@ -130,7 +130,7 @@ class DataArguments:
     )
     # check if dataset type is valid
     def __post_init__(self):
-        assert self.dataset_type in ["AliTianChi", "recruiting_data_v1","recruiting_data_v2"], f"Invalid dataset type: {self.dataset_type}"
+        assert self.dataset_type in ["AliTianChi", "recruiting_data_v1","recruiting_data_v2","recruiting_data_v2_toy"], f"Invalid dataset type: {self.dataset_type}"
         assert self.dataset_type in self.resume_data_path, f"Datset type {self.dataset_type} does not match resume data path {self.resume_data_path}"
         assert self.dataset_type in self.job_data_path, f"Datset type {self.dataset_type} does not match job data path {self.job_data_path}"
         assert self.dataset_type in self.train_label_path, f"Datset type {self.dataset_type} does not match train label path {self.train_label_path}"
