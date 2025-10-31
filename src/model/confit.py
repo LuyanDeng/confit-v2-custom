@@ -798,7 +798,7 @@ class ConFitModel(BaseModel):
         # gathered_batched_all_coarse_job = (
         #     self.all_gather(batched_all_coarse_job, sync_grads=True)
         #     .flatten(0, 1)
-        #     .contiguous()
+        #   contrastive_loss  .contiguous()
         # )
         # gathered_batched_all_coarse_resume = (
         #     self.all_gather(batched_all_coarse_resume, sync_grads=True)
@@ -889,18 +889,21 @@ class ConFitModel(BaseModel):
         )
 
         # === loss ===
-        contrastive_loss_r2j = torch.nn.functional.cross_entropy(
-            contrastive_score_r2j, labels_r2j
-        )
-        contrastive_loss_j2r = torch.nn.functional.cross_entropy(
-            contrastive_score_j2r, labels_j2r
-        )
+        # contrastive_loss_r2j = torch.nn.functional.cross_entropy(
+        #     contrastive_score_r2j, labels_r2j
+        # )
+        # contrastive_loss_j2r = torch.nn.functional.cross_entropy(
+        #     contrastive_score_j2r, labels_j2r
+        # )
 
-        contrastive_loss += self.args.loss_lambda * contrastive_loss_r2j
-        contrastive_loss += (1 - self.args.loss_lambda) * contrastive_loss_j2r
-        contrastive_loss = torch.nan_to_num(
-            contrastive_loss, nan=0.0, posinf=1e6, neginf=-1e6
-        )
+        # contrastive_loss += self.args.loss_lambda * contrastive_loss_r2j
+        # contrastive_loss += (1 - self.args.loss_lambda) * contrastive_loss_j2r
+        # contrastive_loss = torch.nan_to_num(
+        #     contrastive_loss, nan=0.0, posinf=1e6, neginf=-1e6
+        # )
+        contrastive_loss_r2j = torch.tensor(0.0, device=batched_resume_coarse_vec.device)
+        contrastive_loss_j2r = torch.tensor(0.0, device=batched_resume_coarse_vec.device)
+        contrastive_loss = torch.tensor(0.0, device=batched_resume_coarse_vec.device)
 
         return {
             "contrastive_loss": contrastive_loss,
