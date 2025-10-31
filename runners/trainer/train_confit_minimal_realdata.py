@@ -34,8 +34,8 @@ def load_recruiting_data(data_dir, tokenizer, max_length=256):
     val_labels = [json.loads(line) for line in open(os.path.join(data_dir, "valid_classification_data.jsonl"))]
 
     # resume/job 字段使用 text_resume / text_job
-    resume_dict = {r["id"]: r["text_resume"] for r in resume_df.to_dict("records")}
-    job_dict = {j["id"]: j["text_job"] for j in job_df.to_dict("records")}
+    resume_dict = {r["user_id"]: r["text_resume"] for r in resume_df.to_dict("records")}
+    job_dict = {j["jd_no"]: j["text_job"] for j in job_df.to_dict("records")}
 
     def build_pairs(label_list):
         pairs = []
