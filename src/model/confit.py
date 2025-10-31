@@ -794,19 +794,20 @@ class ConFitModel(BaseModel):
         dtype = batched_all_coarse_job.dtype
 
         # === all_gather ===
-        self.trainer.strategy.barrier()
-        gathered_batched_all_coarse_job = (
-            self.all_gather(batched_all_coarse_job, sync_grads=True)
-            .flatten(0, 1)
-            .contiguous()
-        )
-        gathered_batched_all_coarse_resume = (
-            self.all_gather(batched_all_coarse_resume, sync_grads=True)
-            .flatten(0, 1)
-            .contiguous()
-        )
-        self.trainer.strategy.barrier()
-
+        # self.trainer.strategy.barrier()
+        # gathered_batched_all_coarse_job = (
+        #     self.all_gather(batched_all_coarse_job, sync_grads=True)
+        #     .flatten(0, 1)
+        #     .contiguous()
+        # )
+        # gathered_batched_all_coarse_resume = (
+        #     self.all_gather(batched_all_coarse_resume, sync_grads=True)
+        #     .flatten(0, 1)
+        #     .contiguous()
+        # )
+        # self.trainer.strategy.barrier()
+        gathered_batched_all_coarse_job = batched_all_coarse_job
+        gathered_batched_all_coarse_resume = batched_all_coarse_resume
         gathered_batched_job_hard_negatives_coarse_vec = (
             batched_job_hard_negatives_coarse_vec
         )
