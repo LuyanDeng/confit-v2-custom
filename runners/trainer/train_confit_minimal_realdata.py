@@ -40,7 +40,7 @@ def load_recruiting_data(data_dir, tokenizer, max_length=256):
     def build_pairs(label_list):
         pairs = []
         for item in label_list:
-            rid, jid = item["resume_id"], item["job_id"]
+            rid, jid = item["user_id"], item["jd_no"]
             if rid in resume_dict and jid in job_dict:
                 pairs.append((resume_dict[rid], job_dict[jid]))
         return pairs
