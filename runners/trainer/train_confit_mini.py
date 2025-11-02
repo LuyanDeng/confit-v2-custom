@@ -8,6 +8,7 @@ from transformers import AutoTokenizer, AutoModel, get_linear_schedule_with_warm
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import wandb
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 # =============================
 # 1️⃣ 训练参数
@@ -138,6 +139,13 @@ def main():
     train_loader, val_loader = load_recruiting_data("dataset/linkedin_data_v1", tokenizer)
 
     model = MiniConFitModel(lr=args.lr)
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=args.save_path,                
+        filename="epoch{epoch}-val_acc{val_acc:.3f}",  # 文件名模式
+        save_top_k=1,                          # 只保存最好的一个
+        monitor="val_acc",                     # 根据验证准确率选最优
+        mode="max"
+    )
     trainer = pl.Trainer(
         max_epochs=args.max_epochs,
         precision=args.precision,
@@ -145,6 +153,8 @@ def main():
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=1,
         log_every_n_steps=1,
+        default_root_dir=args.save_path,       # ✅ 强制保存到本地
+        callbacks=[checkpoint_callback],
         logger=pl.loggers.WandbLogger(project=args.project, name=args.run_name),
     )
 
