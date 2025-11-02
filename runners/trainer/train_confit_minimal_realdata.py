@@ -18,7 +18,7 @@ class TrainingArguments:
     train_batch_size: int = field(default=1)
     val_batch_size: int = field(default=1)
     lr: float = field(default=1e-5)
-    precision: str = field(default="16-mixed")  # ✅ 适配 L4
+    precision: str = field(default="16-mixed") 
     strategy: str = field(default="auto")
     seed: int = field(default=42)
     no_save: bool = field(default=False)
@@ -27,7 +27,7 @@ class TrainingArguments:
 # =============================
 # 2️⃣ 数据加载函数
 # =============================
-def load_recruiting_data(data_dir, tokenizer, max_length=256):
+def load_recruiting_data(data_dir, tokenizer, max_length=512):
     """加载真实 resume/job + label 数据"""
     resume_df = pd.read_csv(os.path.join(data_dir, "all_resume.csv"))
     job_df = pd.read_csv(os.path.join(data_dir, "all_job.csv"))
@@ -120,7 +120,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/paraphrase-MiniLM-L6-v2")
 
     print("🔹 Loading recruiting_data_v2_toy dataset ...")
-    train_loader, val_loader = load_recruiting_data("dataset/recruiting_data_v2_toy", tokenizer)
+    train_loader, val_loader = load_recruiting_data("dataset/linkedin_data_v1", tokenizer)
 
     print("🔹 Building model ...")
     model = MiniConFitModel(lr=args.lr)
