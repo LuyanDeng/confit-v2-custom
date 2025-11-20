@@ -2,24 +2,6 @@ from typing import Callable
 from src.preprocess.flatten import flatten_dict
 
 
-_max_seq_len_per_resume_feature = {
-    "industries": 512,
-    "resume functions": 256,
-    "languages": 64,
-    "educations": 256,
-    "experiences": 512,
-    "projects": 512,
-    "Resume Basic Info": 512,
-    "preferred locations": 64,
-}
-
-_max_seq_len_per_job_feature = {
-    "locations": 64,
-    "company info": 64,
-    "Job Basic Info": 512,
-    "job notes": 64,
-    "job functions": 256,
-}
 
 
 _max_key_seq_length = 16  # encode the key name

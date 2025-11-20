@@ -15,10 +15,10 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 # =============================
 @dataclass
 class TrainingArguments:
-    save_path: str = field(default="model_checkpoints/linkedin_v1")
+    save_path: str = field(default="model_checkpoints/linkedin_v2")
     max_epochs: int = field(default=3)
-    train_batch_size: int = field(default=4)
-    val_batch_size: int = field(default=4)
+    train_batch_size: int = field(default=8)
+    val_batch_size: int = field(default=8)
     lr: float = field(default=2e-5)
     precision: str = field(default="16-mixed")
     strategy: str = field(default="auto")
@@ -136,16 +136,33 @@ def main():
     wandb.init(project=args.project, name=args.run_name)
 
     tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/paraphrase-MiniLM-L6-v2")
-    train_loader, val_loader = load_recruiting_data("dataset/linkedin_data_v1", tokenizer)
+    # train 2000 data
+    train_loader, val_loader = load_recruiting_data("dataset/linkedin_data_v2", tokenizer)
+    print("Train size:", len(train_loader.dataset))
+    print("Valid size:", len(val_loader.dataset))
+    print(pd.read_json("dataset/linkedin_data_v2/train_labeled_data.jsonl", lines=True).head())
 
-    model = MiniConFitModel(lr=args.lr)
+
+    # model = MiniConFitModel(lr=args.lr)
+    #load previous checkpoints
+    ckpt_path = "model_checkpoints/linkedin_v1/epoch=2-val_acc=0.967.ckpt"
+    print(f"🔄 Loading checkpoint from {ckpt_path}")
+    model = MiniConFitModel.load_from_checkpoint(ckpt_path)
+    # checkpoint_callback = ModelCheckpoint(
+    #     dirpath=args.save_path,                
+    #     filename="epoch{epoch}-val_acc{val_acc:.3f}",  
+    #     save_top_k=1,                          
+    #     monitor="val_acc",                     
+    #     mode="max"
+    # )
     checkpoint_callback = ModelCheckpoint(
-        dirpath=args.save_path,                
-        filename="epoch{epoch}-val_acc{val_acc:.3f}",  # 文件名模式
-        save_top_k=1,                          # 只保存最好的一个
-        monitor="val_acc",                     # 根据验证准确率选最优
+        dirpath=f"{args.save_path}/continued",
+        filename="continued-epoch{epoch}-val_acc{val_acc:.3f}",
+        save_top_k=1,
+        monitor="val_acc",
         mode="max"
     )
+
     trainer = pl.Trainer(
         max_epochs=args.max_epochs,
         precision=args.precision,
