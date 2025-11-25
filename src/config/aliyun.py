@@ -2,7 +2,7 @@
 from copy import deepcopy
 from typing import Callable
 
-
+# add comment
 _resume_col_name_mapping = {
     "live_city_id": "居住城市",
     "desire_jd_city_id": "期望工作城市",
